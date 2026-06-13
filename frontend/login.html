@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Student Meal Planner</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <img src="restaurant.png" alt="logo">
+      <h1>Student Meal Planner</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('login')">Login</button>
+      <button class="tab" onclick="showTab('register')">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email address">
+      <div class="password-wrapper">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <span class="eye-icon" onclick="togglePassword('loginPassword', this)">👁️</span>
+      </div>
+      <button class="auth-btn" onclick="login()">Login</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" style="display:none">
+      <input type="text" id="regName" placeholder="Full name">
+      <input type="email" id="regEmail" placeholder="Email address">
+      <div class="password-wrapper">
+        <input type="password" id="regPassword" placeholder="Password (min 6 characters)">
+        <span class="eye-icon" onclick="togglePassword('regPassword', this)">👁️</span>
+      </div>
+      <button class="auth-btn" onclick="register()">Create Account</button>
+    </div>
+
+    <p id="authMsg" class="msg"></p>
+
+  </div>
+</div>
+
+<script>
+  const API = "http://localhost:5000/api";
+
+  // If already logged in, skip login page
+  if (localStorage.getItem("token")) {
+    window.location.href = "index.html";
+  }
+
+  function showTab(tab) {
+    document.getElementById("loginForm").style.display =
+      tab === "login" ? "block" : "none";
+    document.getElementById("registerForm").style.display =
+      tab === "register" ? "block" : "none";
+    document.querySelectorAll(".tab").forEach((t, i) => {
+      t.classList.toggle("active", tab === "login" ? i === 0 : i === 1);
+    });
+    document.getElementById("authMsg").textContent = "";
+  }
+
+  async function login() {
+    const email    = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password)
+      return showMsg("Please fill in all fields", "error");
+
+    showMsg("Logging in...", "info");
+
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) return showMsg(data.message, "error");
+
+      localStorage.setItem("token",     data.token);
+      localStorage.setItem("userName",  data.name);
+      localStorage.setItem("userEmail", data.email);
+
+      window.location.href = "index.html";
+
+    } catch (err) {
+      showMsg("Cannot connect to server. Make sure it is running.", "error");
+    }
+  }
+
+  async function register() {
+    const name     = document.getElementById("regName").value.trim();
+    const email    = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+
+    if (!name || !email || !password)
+      return showMsg("Please fill in all fields", "error");
+
+    if (password.length < 6)
+      return showMsg("Password must be at least 6 characters", "error");
+
+    showMsg("Creating account...", "info");
+
+    try {
+      const res  = await fetch(`${API}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) return showMsg(data.message, "error");
+
+      showMsg(
+        "✅ Account created! Check your email to confirm, then log in.",
+        "success"
+      );
+
+    } catch (err) {
+      showMsg("Cannot connect to server. Make sure it is running.", "error");
+    }
+  }
+
+  function showMsg(msg, type) {
+    const el = document.getElementById("authMsg");
+    el.textContent = msg;
+    el.className = "msg " + type;
+  }
+  // Handle email confirmation redirect
+const hash = window.location.hash;
+if (hash.includes("access_token")) {
+  showMsg("✅ Email confirmed! You can now log in.", "success");
+  showTab("login");
+}
+
+if (hash.includes("error=access_denied")) {
+  showMsg("⚠️ Confirmation link expired. Please register again.", "error");
+  showTab("register");
+}
+function togglePassword(inputId, icon) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") {
+    input.type = "text";
+    icon.textContent = "🙈";
+  } else {
+    input.type = "password";
+    icon.textContent = "👁️";
+  }
+}
+</script>
+
+</body>
+</html>

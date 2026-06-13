@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — Student Meal Planner</title>
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img src="restaurant.png" alt="logo">
+    <h1>Student <br> Meal Planner</h1>
+  </div>
+  <ul class="nav-link">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="list.html">Food List</a></li>
+    <!-- <li><a href="#" onclick="logout()" style="color:#dc3545;">Logout</a></li>
+    <li><a href="profile.html" class="active">Profile</a></li> -->
+  <!-- Dropdown -->
+  <li class="dropdown">
+    <button class="dropdown-btn" onclick="toggleDropdown()">
+      <div class="avatar-small" id="navAvatar">F</div>
+      <span id="userName">Hi, Student</span>
+      <span class="arrow">▼</span>
+    </button>
+
+    <div class="dropdown-menu" id="dropdownMenu">
+      <!-- User info -->
+      <div class="dropdown-header">
+        <div class="dh-name" id="dropName">Faad</div>
+        <div class="dh-email" id="dropEmail">faad@gmail.com</div>
+      </div>
+
+      <a href="profile.html">
+        <span class="icon icon-profile">👤</span> My Profile
+      </a>
+      <a href="list.html">
+        <span class="icon icon-food">🍽️</span> Food List
+      </a>
+      <a href="index.html">
+        <span class="icon icon-plan">📅</span> Meal Planner
+      </a>
+
+      <div class="dropdown-divider"></div>
+
+      <a href="#" onclick="logout()" class="logout-link">
+        <span class="icon icon-logout">🚪</span> Logout
+      </a>
+    </div>
+  </li>
+</ul>
+  </ul>
+</nav>
+
+<section class="profile-section">
+  <div class="profile-container">
+
+    <!-- Left: Avatar -->
+    <div class="profile-left">
+      <div class="avatar-wrapper">
+        <div class="avatar" id="avatarDisplay">👤</div>
+      </div>
+      <h2 id="profileNameDisplay">Loading...</h2>
+      <p id="profileEmailDisplay" class="email"></p>
+    </div>
+
+    <!-- Right: Edit Form -->
+    <div class="profile-right">
+
+      <!-- Personal Info -->
+      <div class="profile-card">
+        <h3>👤 Personal Information</h3>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="profileName" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="profileEmail" placeholder="Email" disabled>
+        </div>
+        <button class="save-btn" onclick="saveProfile()">
+          Save Changes
+        </button>
+        <p id="profileMsg" class="msg"></p>
+      </div>
+
+      <!-- Preferences -->
+      <div class="profile-card">
+        <h3>⚙️ Meal Preferences</h3>
+        <div class="form-group">
+          <label>Default Weekly Budget (₦)</label>
+          <input type="number" id="defaultBudget" placeholder="10000">
+        </div>
+        <div class="form-group">
+          <label>Default Meals Per Day</label>
+          <div class="meal-option">
+            <label>
+              <input type="radio" name="defaultMeals" value="2" checked> 2 Meals
+            </label>
+            <label>
+              <input type="radio" name="defaultMeals" value="3"> 3 Meals
+            </label>
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveProfile()">
+          Save Preferences
+        </button>
+      </div>
+
+      <!-- Change Password -->
+      <div class="profile-card">
+        <h3>🔒 Change Password</h3>
+        <div class="form-group">
+          <label>Current Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="currentPassword" placeholder="Current password">
+            <span class="eye-icon" onclick="togglePassword('currentPassword', this)">👁️</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="newPassword" placeholder="New password (min 6 characters)">
+            <span class="eye-icon" onclick="togglePassword('newPassword', this)">👁️</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="changePassword()">
+          Change Password
+        </button>
+        <p id="passwordMsg" class="msg"></p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  const API   = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
+
+  if (!token) window.location.href = "login.html";
+
+  // Show username in nav
+  document.getElementById("userName").textContent =
+    "Hi, " + (localStorage.getItem("userName") || "Student") + " 👋";
+
+  // Load profile on page open
+  async function loadProfile() {
+    try {
+      const res  = await fetch(`${API}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const data = await res.json();
+
+      // Fill form
+      document.getElementById("profileName").value    = data.name || "";
+      document.getElementById("profileEmail").value   = localStorage.getItem("userEmail") || "";
+      document.getElementById("defaultBudget").value  = data.default_budget || 10000;
+
+      // Set meal radio
+      const mealVal = data.default_meals || 2;
+      document.querySelector(`input[name="defaultMeals"][value="${mealVal}"]`).checked = true;
+
+      // Update display
+      document.getElementById("profileNameDisplay").textContent  = data.name || "Student";
+      document.getElementById("profileEmailDisplay").textContent = localStorage.getItem("userEmail") || "";
+      document.getElementById("avatarDisplay").textContent       = (data.name || "S")[0].toUpperCase();
+
+    } catch (err) {
+      console.error("Could not load profile:", err);
+    }
+  }
+
+  // Save profile
+  async function saveProfile() {
+    const name           = document.getElementById("profileName").value.trim();
+    const default_budget = document.getElementById("defaultBudget").value;
+    const default_meals  = parseInt(document.querySelector('input[name="defaultMeals"]:checked').value);
+
+    if (!name) return showMsg("profileMsg", "Name cannot be empty", "error");
+
+    showMsg("profileMsg", "Saving...", "info");
+
+    try {
+      const res  = await fetch(`${API}/profile`, {
+        method:  "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:  `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, default_budget, default_meals })
+      });
+
+      const data = await res.json();
+      if (!res.ok) return showMsg("profileMsg", data.message, "error");
+
+      // Update localStorage and display
+      localStorage.setItem("userName", name);
+      document.getElementById("profileNameDisplay").textContent = name;
+      document.getElementById("avatarDisplay").textContent      = name[0].toUpperCase();
+      document.getElementById("userName").textContent           = "Hi, " + name + " 👋";
+
+      showMsg("profileMsg", "✅ Profile updated successfully!", "success");
+
+    } catch (err) {
+      showMsg("profileMsg", "❌ Cannot connect to server", "error");
+    }
+  }
+
+  // Change password
+  async function changePassword() {
+    const currentPassword = document.getElementById("currentPassword").value;
+    const newPassword     = document.getElementById("newPassword").value;
+
+    if (!currentPassword || !newPassword)
+      return showMsg("passwordMsg", "Please fill in all fields", "error");
+
+    if (newPassword.length < 6)
+      return showMsg("passwordMsg", "New password must be at least 6 characters", "error");
+
+    showMsg("passwordMsg", "Changing password...", "info");
+
+    try {
+      const res  = await fetch(`${API}/profile/password`, {
+        method:  "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:  `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+
+      const data = await res.json();
+      if (!res.ok) return showMsg("passwordMsg", data.message, "error");
+
+      document.getElementById("currentPassword").value = "";
+      document.getElementById("newPassword").value     = "";
+      showMsg("passwordMsg", "✅ Password changed successfully!", "success");
+
+    } catch (err) {
+      showMsg("passwordMsg", "❌ Cannot connect to server", "error");
+    }
+  }
+
+  // Toggle password visibility
+  function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+      input.type      = "text";
+      icon.textContent = "🙈";
+    } else {
+      input.type      = "password";
+      icon.textContent = "👁️";
+    }
+  }
+
+  // Show message
+  function showMsg(elementId, msg, type) {
+    const el       = document.getElementById(elementId);
+    el.textContent = msg;
+    el.className   = "msg " + type;
+  }
+
+  // Logout
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.href = "login.html";
+    }
+  }
+
+  // Start
+  loadProfile();
+  // ── Dropdown ──────────────────────────
+function toggleDropdown() {
+  document.querySelector('.dropdown').classList.toggle('open');
+}
+
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const dropdown = document.querySelector('.dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+// Fill name and avatar
+const userName  = localStorage.getItem("userName")  || "Student";
+const userEmail = localStorage.getItem("userEmail") || "";
+
+document.getElementById("userName").textContent  = "Hi, " + userName;
+document.getElementById("navAvatar").textContent = userName[0].toUpperCase();
+document.getElementById("dropName").textContent  = userName;
+document.getElementById("dropEmail").textContent = userEmail;
+
+// Logout
+function logout() {
+  if (confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.href = "login.html";
+  }
+}
+</script>
+
+</body>
+</html>

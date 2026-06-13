@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>Food List</title>
+  <link rel="stylesheet" href="list.css">
+
+</head>
+<body>
+<nav>
+        
+        <div class="logo">
+            <img src="restaurant.png" alt="logo">
+            <h1>Student <br> Meal Planner</h1>
+        </div>
+         <ul class="nav-link">
+             <li><a href="index.html" class=>Home</a></li>
+             <li><a href="list.html" class="active">Food List</a></li>
+
+             <!-- <li><span id="userName" style="font-size:16px; color:#1f7a2e; font-weight:600;"></span></li>
+             <li><a href="#" onclick="logout()" style="color:#dc3545;">Logout</a></li>
+             <li><a href="profile.html">Profile</a></li> -->
+
+  <!-- Dropdown -->
+  <li class="dropdown">
+    <button class="dropdown-btn" onclick="toggleDropdown()">
+      <div class="avatar-small" id="navAvatar">F</div>
+      <span id="userName">Hi, Student</span>
+      <span class="arrow">▼</span>
+    </button>
+
+    <div class="dropdown-menu" id="dropdownMenu">
+      <!-- User info -->
+      <div class="dropdown-header">
+        <div class="dh-name" id="dropName">Faad</div>
+        <div class="dh-email" id="dropEmail">faad@gmail.com</div>
+      </div>
+
+      <a href="profile.html">
+        <span class="icon icon-profile">👤</span> My Profile
+      </a>
+      <a href="list.html">
+        <span class="icon icon-food">🍽️</span> Food List
+      </a>
+      <a href="index.html">
+        <span class="icon icon-plan">📅</span> Meal Planner
+      </a>
+
+      <div class="dropdown-divider"></div>
+
+      <a href="#" onclick="logout()" class="logout-link">
+        <span class="icon icon-logout">🚪</span> Logout
+      </a>
+    </div>
+  </li>
+</ul>
+         </ul>
+    </nav>
+<section class="food-section">
+
+  <div class="top-area">
+
+    <h1>Top Affordable Foods</h1>
+
+    <div class="top-buttons">
+
+      <button id="openModalBtn">
+        + Add Food
+      </button>
+
+      <button id="clearBtn">
+        Clear All
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="table-container">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Food Name</th>
+
+          <th>Price</th>
+
+          <th>Actions</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="foodTableBody">
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+<div class="modal" id="foodModal">
+
+  <div class="modal-content">
+
+    <h2 id="modalTitle">
+      Add Food
+    </h2>
+    <label>Food Name</label>
+
+    <input
+      type="text"
+      id="foodName"
+      placeholder="Enter food name"
+    >
+    <label>Food Price</label>
+
+    <input
+      type="number"
+      id="foodPrice"
+      placeholder="Enter food price"
+    >
+    <div class="modal-buttons">
+
+      <button id="saveBtn">
+        Save Food
+      </button>
+
+      <button id="closeBtn">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<script src="list.js"></script>
+<script>
+  // Redirect to login if not logged in
+  if (!localStorage.getItem("token")) {
+    window.location.href = "login.html";
+  }
+
+  // Show user's name in nav
+  document.getElementById("userName").textContent =
+    "Hi, " + (localStorage.getItem("userName") || "Student") + " 👋";
+
+  // Logout function
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.href = "login.html";
+    }
+  }
+  // ── Dropdown ──────────────────────────
+function toggleDropdown() {
+  document.querySelector('.dropdown').classList.toggle('open');
+}
+
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const dropdown = document.querySelector('.dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+// Fill name and avatar
+const userName  = localStorage.getItem("userName")  || "Student";
+const userEmail = localStorage.getItem("userEmail") || "";
+
+document.getElementById("userName").textContent  = "Hi, " + userName;
+document.getElementById("navAvatar").textContent = userName[0].toUpperCase();
+document.getElementById("dropName").textContent  = userName;
+document.getElementById("dropEmail").textContent = userEmail;
+
+// Logout
+function logout() {
+  if (confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.href = "login.html";
+  }
+}
+</script>
+
+</body>
+</html>

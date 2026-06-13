@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Meal Planner</title>
+    <link rel="stylesheet" href="planner.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="restaurant.png" alt="logo">
+            <h1>Student <br> Meal Planner</h1>
+        </div>
+        <ul class="nav-link">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="list.html">Food List</a></li>
+  <!-- Dropdown -->
+  <li class="dropdown">
+    <button class="dropdown-btn" onclick="toggleDropdown()">
+      <div class="avatar-small" id="navAvatar">F</div>
+      <span id="userName">Hi, Student</span>
+      <span class="arrow">▼</span>
+    </button>
+
+    <div class="dropdown-menu" id="dropdownMenu">
+      <!-- User info -->
+      <div class="dropdown-header">
+        <div class="dh-name" id="dropName">Faad</div>
+        <div class="dh-email" id="dropEmail">faad@gmail.com</div>
+      </div>
+
+      <a href="profile.html">
+        <span class="icon icon-profile">👤</span> My Profile
+      </a>
+      <a href="list.html">
+        <span class="icon icon-food">🍽️</span> Food List
+      </a>
+      <a href="index.html">
+        <span class="icon icon-plan">📅</span> Meal Planner
+      </a>
+
+      <div class="dropdown-divider"></div>
+
+      <a href="#" onclick="logout()" class="logout-link">
+        <span class="icon icon-logout">🚪</span> Logout
+      </a>
+    </div>
+  </li>
+</ul>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Eat Well. Stay Strong. <br>
+                <span class="green">Stick to Your Budget.</span>
+            </h1>
+            <p>Enter your weekly allowance and get a smart
+                meal plan with affordable Nigerian meals
+                that will sustain you all week.
+            </p>
+
+            <div class="form-card">
+                <div class="form-group">
+                    <label>Enter Weekly Allowance (₦)</label>
+                    <div class="input-box">
+                        <div class="currency">₦</div>
+                        <input type="number" id="allowance" placeholder="10000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Meal Per Day</label>
+                    <div class="meal-option">
+                        <label>
+                            <input type="radio" name="meal" value="2" checked> 2 Meals
+                        </label>
+                        <label>
+                            <input type="radio" name="meal" value="3"> 3 Meals
+                        </label>
+                    </div>
+                </div>
+
+                <button id="generateBtn" onclick="generatePlan()">Generate Meal Plan</button>
+
+                <!-- Output renders here -->
+                <div id="planner" style="display:none; margin-top:25px;">
+                    <h3 style="margin-bottom:15px;">Your Weekly Plan</h3>
+                    <div id="planGrid" class="plan-grid"></div>
+                    <div style="margin-top:15px;">
+                        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px;">
+                            <span>Estimated spend</span>
+                            <span id="budgetSpend"></span>
+                        </div>
+                        <div style="height:8px; background:#e0e0e0; border-radius:99px; overflow:hidden;">
+                            <div id="budgetFill" style="height:100%; width:0%; background:#138c2f; border-radius:99px; transition:width 0.6s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <img src="collab-media-zmm--Wl0mrU-unsplash.jpg" alt="food">
+            <div class="tip-box">
+                <div>
+                    <h2>Smart Tip</h2>
+                    <p>Planning your meals helps you save more and eat healthy
+                        even on a student budget.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="planner.js"></script>
+    <script>
+  // Redirect to login if not logged in
+  if (!localStorage.getItem("token")) {
+    window.location.href = "login.html";
+  }
+
+  // Show user's name in nav
+  document.getElementById("userName").textContent =
+    "Hi, " + (localStorage.getItem("userName") || "Student") + " 👋";
+
+  // Logout function
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.href = "login.html";
+    }
+  }
+  // ── Dropdown ──────────────────────────
+function toggleDropdown() {
+  document.querySelector('.dropdown').classList.toggle('open');
+}
+
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const dropdown = document.querySelector('.dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+// Fill name and avatar
+const userName  = localStorage.getItem("userName")  || "Student";
+const userEmail = localStorage.getItem("userEmail") || "";
+
+document.getElementById("userName").textContent  = "Hi, " + userName;
+document.getElementById("navAvatar").textContent = userName[0].toUpperCase();
+document.getElementById("dropName").textContent  = userName;
+document.getElementById("dropEmail").textContent = userEmail;
+
+// Logout
+function logout() {
+  if (confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.href = "login.html";
+  }
+}
+</script>
+</body>
+</html>
