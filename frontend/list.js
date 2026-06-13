@@ -1,4 +1,4 @@
-const API = "https://student-meal-planner-api.onrender.com";
+const API = "https://student-meal-planner-api.onrender.com/api";
 const token = localStorage.getItem("token");
 
 // Redirect to login if not logged in
