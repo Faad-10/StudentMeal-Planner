@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = "https://your-render-url.onrender.com/api";
 const token = localStorage.getItem("token");
 
 // Redirect to login if not logged in
